@@ -37,21 +37,9 @@ int LEDState = 1;
 #define normal 0
 #define finish 1
 
-#include <SoftwareSerial.h>
-SoftwareSerial MusikSerial(11,12); //rx, tx
-
-
 #define fastSpeed 10
 #define middleSpeed 30
 #define slowSpeed 60
-/*
-Start Wert: fest,0x86
- Device ID: 0 ... 255
- Kommando: xx
- Parameter 1
- Parameter 2
- Checksumme (CRC)
- */
 
 int LEDs[4] = {3,5,6,9}; //save the pin number of all four LEDs. (only for Programm test)
 
@@ -108,7 +96,7 @@ double pnoise(double x, double y, double z)
   y -= floor(y);                             /* OF POINT IN CUBE.   */
   z -= floor(z);
   double  u = fade(x),                       /* COMPUTE FADE CURVES */
-  v = fade(y),                       /* FOR EACH OF X,Y,Z.  */
+  v = fade(y),                          /* FOR EACH OF X,Y,Z.  */
   w = fade(z);
   int  A = P(X)+Y,
   AA = P(A)+Z,
@@ -118,11 +106,11 @@ double pnoise(double x, double y, double z)
   BB = P(B+1)+Z;                        /* THE 8 CUBE CORNERS, */
 
   return lerp(w,lerp(v,lerp(u, grad(P(AA  ), x, y, z),   /* AND ADD */
-  grad(P(BA  ), x-1, y, z)),   /* BLENDED */
+  grad(P(BA  ), x-1, y, z)),               /* BLENDED */
   lerp(u, grad(P(AB  ), x, y-1, z),        /* RESULTS */
-  grad(P(BB  ), x-1, y-1, z))),       /* FROM  8 */
-  lerp(v, lerp(u, grad(P(AA+1), x, y, z-1),  /* CORNERS */
-  grad(P(BA+1), x-1, y, z-1)),          /* OF CUBE */
+  grad(P(BB  ), x-1, y-1, z))),            /* FROM  8 */
+  lerp(v, lerp(u, grad(P(AA+1), x, y, z-1),/* CORNERS */
+  grad(P(BA+1), x-1, y, z-1)),             /* OF CUBE */
   lerp(u, grad(P(AB+1), x, y-1, z-1),
   grad(P(BB+1), x-1, y-1, z-1))));
 }
@@ -155,8 +143,6 @@ void setKerzeBright(int num, int brightness){
   brightness = brightness > 4000 ? 4000 : brightness;
   brightness = brightness < 500 ? 500 : brightness;
   brightNow[num-1] = brightness; //set new brightness.
-  //Serial.println("LED" + String(num) + "brightness: ");
-  //Serial.println(brightness);
 }
 
 //----------------------------------
@@ -169,13 +155,11 @@ void setKerzeBlend(int num, int blendSpeed=10){
 //----------------------------------
 void kerzeON(){
   for(int i=0; i<4;i++) pwm.setPWM(i,0,4000);
-  //for(int i=0; i<4; i++) digitalWrite(LEDs[i], HIGH); //Simulation
 }
 
 //----------------------------------
 void kerzeOFF(){
   for(int i=0; i<4;i++) pwm.setPWM(i,0,0);
-  //for(int i=0; i<4; i++) digitalWrite(LEDs[i], LOW); //Simulation  
 }
 
 //---------------------------------//
@@ -189,77 +173,6 @@ void processCommand(){
     LEDState = Blink;
     Serial.println(F("LEDs all blink"));
   }
-  /*
-  else if(!strncmp(buffer,"play",4)) {
-    //PlaySong(3); //the correct Song
-    char *ptr=buffer;    
-    while(ptr && ptr<buffer+sofar && strlen(ptr)) {
-      switch(*ptr) {
-      case '1': // first song
-        PlaySong(1);
-        Serial.println(F("Song 1 played")); // Using Serial.println(F()); can save text on Flash, but not directly load in memory. In oder to save memonry
-        break;
-      case '2': // second song
-        PlaySong(2);
-        Serial.println(F("Song 2 played"));        
-        break;
-      case '3': //third song
-        PlaySong(3);
-        Serial.println(F("Song 3 played"));
-        break;
-      case '4': //third song
-        PlaySong(4);
-        Serial.println(F("Song 4 played"));
-        break;
-      case '5': //third song
-        PlaySong(5);
-        Serial.println(F("Song 5 played"));
-        break;  
-      case '6': //third song
-        PlaySong(6);
-        Serial.println(F("Song 6 played"));
-        break;
-      case '7': //third song
-        PlaySong(7);
-        Serial.println(F("Song 7 played"));
-        break;
-      case '8': //third song
-        PlaySong(8);
-        Serial.println(F("Song 8 played"));
-        break;        
-      }
-    ptr=strchr(ptr,' ')+1; //find the next empty space & let pointer point to the next addr
-    }
-  }
-  */
-  /*
-  else if(!strncmp(buffer,"stop",4)) {
-    Serial.println(F("Song stopped"));
-    StopSong();
-  }
-  */
-  //  else if(!strncmp(buffer,"config",6)){
-  /*
-  else if(!strncmp(buffer,"blink",5)){
-   
-   char *ptr=buffer;
-   //Serial.println(buffer); //the displayed buffer show that after strncmp() buffer, buffer don't be changed at all.
-   while(ptr && ptr<buffer+sofar && strlen(ptr)) {
-   switch(*ptr) {
-   case 'A':
-   blinkSpeed = atof(ptr+1); //atol have even smaller range.
-   Serial.print("BlinkSpeed is ");
-   Serial.println(blinkSpeed);
-   break;
-   case 'B':
-   blinkSpeed2 = atof(ptr+1);
-   Serial.print("BlinkSpeed2 is ");
-   Serial.println(blinkSpeed2);
-   }
-   ptr=strchr(ptr,' ')+1; //find the next empty space & let pointer point to the next addr
-   }
-   }
-   */
   else if(!strncmp(buffer,"lt",2)){
 
     static float brightness1;
@@ -275,7 +188,6 @@ void processCommand(){
     static float LEDtrigger; //boolean variable enable / disable all LEDs (ON/OFF)
 
     char *ptr=buffer;
-    //Serial.println(buffer); //the displayed buffer show that after strncmp() buffer, buffer don't be changed at all.
     while(ptr && ptr<buffer+sofar && strlen(ptr)) {
       switch(*ptr) {
       case 'A': // brightness for each LED
@@ -368,100 +280,7 @@ void processCommand(){
       ptr=strchr(ptr,' ')+1; //find the next empty space & let pointer point to the next addr
     }
   }
-  
-  /*
-  else if(!strncmp(buffer,"sd",2)){
-    char *ptr=buffer;
-    //Serial.println(buffer); //the displayed buffer show that after strncmp() buffer, buffer don't be changed at all.
-    while(ptr && ptr<buffer+sofar && strlen(ptr)) {
-      switch(*ptr) {
-      case 'A': //set Volume of each channel
-        VolumeNow[0] = atof(ptr+1);
-        Serial.print("Vol.1: ");
-        Serial.println(VolumeNow[0]);
-        break;
-      case 'B':
-        VolumeNow[1] = atof(ptr+1);
-        Serial.print("Vol.2: ");
-        Serial.println(VolumeNow[1]);
-        break;
-      case 'C':
-        VolumeNow[2] = atof(ptr+1);
-        Serial.print("Vol.3: ");
-        Serial.println(VolumeNow[2]);
-        break;
-      case 'D':
-        VolumeNow[3] = atof(ptr+1);
-        Serial.print("Vol.4: ");
-        Serial.println(VolumeNow[3]);
-        break;
-      case 'E':
-        VolumeNow[4] = atof(ptr+1);
-        Serial.print("Vol.5: ");
-        Serial.println(VolumeNow[4]);
-        break;
-      case 'F':
-        VolumeNow[5] = atof(ptr+1);
-        Serial.print("Vol.6: ");
-        Serial.println(VolumeNow[5]);
-        break;
-      case 'G':
-        VolumeNow[6] = atof(ptr+1);
-        Serial.print("Vol.7: ");
-        Serial.println(VolumeNow[6]);
-        break;
-      case 'H':
-        VolumeNow[7] = atof(ptr+1);
-        Serial.print("Vol.8: ");
-        Serial.println(VolumeNow[7]);
-        break;
-      case 'a':
-        SoundBlendSpeed[0] = atof(ptr+1);
-        Serial.print("Channel1 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[0]);
-        break;
-      case 'b':
-        SoundBlendSpeed[1] = atof(ptr+1);
-        Serial.print("Channel2 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[1]);
-        break;
-      case 'c':
-        SoundBlendSpeed[2] = atof(ptr+1);
-        Serial.print("Channel3 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[2]);
-        break;
-      case 'd':
-        SoundBlendSpeed[3] = atof(ptr+1);
-        Serial.print("Channel4 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[3]);
-        break;
-      case 'e':
-        SoundBlendSpeed[4] = atof(ptr+1);
-        Serial.print("Channel5 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[4]);
-        break;
-      case 'f':
-        SoundBlendSpeed[5] = atof(ptr+1);
-        Serial.print("Channel6 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[5]);
-        break;
-      case 'g':
-        SoundBlendSpeed[6] = atof(ptr+1);
-        Serial.print("Channel7 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[6]);
-        break;
-      case 'h':
-        SoundBlendSpeed[7] = atof(ptr+1);
-        Serial.print("Channel8 blendSpeed: ");
-        Serial.println(SoundBlendSpeed[7]);
-        break;
-      }
-      ptr=strchr(ptr,' ')+1; //find the next empty space & let pointer point to the next addr
-    }
-  }
-  */
 }
-
 
 //----------------------------------
 void kerzeBlink(){
@@ -472,19 +291,16 @@ void kerzeBlink(){
   brightness += val;
   for(int i=0; i<4;i++) 
     pwm.setPWM(i,0,brightness);
-    //analogWrite(LEDs[i],map(brightness,0,4000,0,255)); //Simulation
 }
 
 //----------------------------------
 // Overloaded KerzeBlink(). It's used in KerzeSim() mode to let a LED still do blink.
 void kerzeBlink(int kerze){
-  //timer(5); //funktion same as blink(5). but without block for KerzeSim() to going right.
   static int brightness = 100;
   static int val = 100; //because of the timer()'s different between kerzeBlink() and KerzeSim(), val should be fine tune a little bit.
   val = (brightness == 0 || brightness == 4000) ? -val : val;
   brightness += val;
   pwm.setPWM((kerze-1),0,brightness); //set the acutal LED to do blink.
-  //analogWrite(LEDs[kerze-1],map(brightness,0,4000,0,255)); //Simulation
 }
 
 //----------------------------------
@@ -495,7 +311,8 @@ void kerzeSim(){
   int output[4];
 
   static  int brightOld[4] = {
-    1500,1500,1500,1500                }; //default brightness 1500. Max. 4095
+    1500,1500,1500,1500                
+  }; //default brightness 1500. Max. 4095
 
   b[0] += 0.07;
 
@@ -520,22 +337,17 @@ void kerzeSim(){
 
     outputTmp[i] = int(127 + (a[i] * 127)); //second 127 changed from 10
     output[i] = int(map(outputTmp[i], 0, 255, 5/*300 relative naturl*/, brightOld[i]/*brightNow[i]*/));
-    //    Serial.print(brightOld[i]);
-    //    Serial.print(" ");
     
     if( kerzeBlinked[i] == false){ //added on 2015-2-27
       pwm.setPWM(i,0,output[i]); //TODO: Here should check which mode should this specific LED play. kerzeBlink() or KerzeSim()
-      //analogWrite(LEDs[i],map(output[i],0,4000,0,255));
     } else {
       kerzeBlink(i+1);
     }
   }
-  //  Serial.println();
 }
 
 //----------------------------------
 void setup(){
-  //Serial.begin(115200);
   Serial.begin(38400); //try the functionality so use a safer speed.
   Serial.println("\nHello, This is light & Sound Control Board");
 
@@ -548,13 +360,6 @@ void setup(){
   // save I2C bitrate
   uint8_t twbrbackup = TWBR;
   TWBR = 12; // upgrade to 400KHz!
-
-  MusikSerial.begin(115200); //Musik Bautrate 11520, Device ID: 1
-  SetVolume(0,1);
-//  PlaySong(1); //the first listed song is as number 1 but not number 0  
-//  delay(5000);
-
-  //for(int i = 0; i < 4; i++)  pinMode(LEDs[i],OUTPUT); //Simulation
 }
 
 //----------------------------------
@@ -583,24 +388,9 @@ void loop() {
     // echo completion
     Serial.print(F("> "));
   }
-  /*
-  if(!LEDToggleOn && !LEDToggleOff){ //demo blinky part to show the state
-   digitalWrite(13, HIGH);
-   delay(long(blinkSpeed));
-   digitalWrite(13, LOW);
-   delay(long(blinkSpeed2));
-   }
-   */
 
   if(LEDState == KerzeSim){
     kerzeSim();
-    //TODO: In kerzeSim() mode, let one or more LED blink.
-    /*
-    for(int i=0; i<4; i++){
-      if(kerzeBlinked[i] == true)
-        kerzeBlink(i);
-    } 
-   */   
   }
   else if(LEDState == Blink){
     kerzeBlink();
@@ -620,8 +410,6 @@ void loop() {
     Serial.print(kerzeBlinked[i]);
   }
   Serial.println();
-
-  //sound();
 }
 
 
